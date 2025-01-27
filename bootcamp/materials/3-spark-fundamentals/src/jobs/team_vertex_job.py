@@ -8,7 +8,7 @@ WITH teams_deduped AS (
 )
 SELECT
     team_id AS identifier,
-    'team' AS `type`,
+    'team' AS `type`, # had to use `` because type is a reserved keyword in Spark
     map(
         'abbreviation', abbreviation,
         'nickname', nickname,

@@ -1,0 +1,8 @@
+#### PySpark Job Scripts #####
+- In the examples, `def main()` is the literal job (builds the Spark Session, builds the DataFrame, adds to table...)
+- To make these jobs more "testable", create another function OUTSIDE where you build/write data that just does the transformation logic!
+    - This allows you to isolate and test the logic in the query, ensuring that it works propery!
+    - Ex. In `players_scd_job.py`, `do_player_scd_transformation()` represents just the transformations, while `main()` does the actual
+          building/writing. We can easily comment out code and test `do_player_scd_transformation()` to make sure our SQL is correct!
+ 
+ - This lab went through `team_vertex_job.py` and its associated pytest.
