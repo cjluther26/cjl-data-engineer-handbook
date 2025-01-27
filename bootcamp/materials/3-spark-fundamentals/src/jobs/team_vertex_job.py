@@ -1,5 +1,7 @@
 from pyspark.sql import SparkSession
 
+
+# had to use `` for `type` because `type` is a reserved keyword in Spark
 query = """
 
 WITH teams_deduped AS (
@@ -8,7 +10,7 @@ WITH teams_deduped AS (
 )
 SELECT
     team_id AS identifier,
-    'team' AS `type`, # had to use `` because type is a reserved keyword in Spark
+    'team' AS `type`, 
     map(
         'abbreviation', abbreviation,
         'nickname', nickname,
@@ -20,6 +22,7 @@ FROM teams_deduped
 WHERE row_num = 1
 
 """
+
 
 
 def do_team_vertex_transformation(spark, dataframe):
