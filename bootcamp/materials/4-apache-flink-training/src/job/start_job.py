@@ -95,7 +95,8 @@ def create_events_source_kafka(t_env):
             ip VARCHAR,
             headers VARCHAR,
             event_time VARCHAR,
-            event_timestamp AS TO_TIMESTAMP(event_time, '{pattern}')
+            event_timestamp AS TO_TIMESTAMP(event_time, '{pattern}'),
+            WATERMARK FOR event_timestamp AS event_timestamp - INTERVAL '15' SECOND
         ) WITH (
             'connector' = 'kafka',
             'properties.bootstrap.servers' = '{os.environ.get('KAFKA_URL')}',
@@ -118,7 +119,7 @@ def log_processing():
     # Set up the execution environment
     env = StreamExecutionEnvironment.get_execution_environment()
     print('got streaming environment')
-    env.enable_checkpointing(10 * 1000)
+    env.enable_checkpointing(10 * 1000) # every 10 seconds
     env.set_parallelism(1)
 
     # Set up the table environment
