@@ -9,24 +9,28 @@
 
 
 
+----------------------------
+----------------------------
+-------- Question 1 --------
+----------------------------
+----------------------------
 /*
-1. DDL for `actors` table: Create a DDL for an actors with:
-   - STRUCT `films`
-   - `quality_class`
-   - `is_active`
+DDL for `actors` table: Create a DDL for an actors with:
+  - STRUCT `films`
+  - `quality_class`
+  - `is_active`
 */
 
--- SELECT * FROM actor_films WHERE actor = 'Leonardo DiCaprio'
-
 -- CREATE TYPE films AS (
---   film TEXT
+--   filmid TEXT 
+-- , film TEXT
 -- , year INTEGER
 -- , votes INTEGER
--- , rating REAL
--- , filmid TEXT
+-- , rating REAL 
 -- )
 
--- CREATE TYPE quality_class AS ENUM (
+
+-- CREATE TYPE quality_class AS ENUM(
 --   'star'
 -- , 'good'
 -- , 'average'
@@ -37,36 +41,28 @@
 --   actorid TEXT
 -- , actor TEXT
 -- , year INTEGER
--- , avg_rating_in_year NUMERIC
 -- , quality_class quality_class
 -- , is_active BOOLEAN
 -- , films films[]
 -- )
 
 
--- SELECT 
---   actorid
--- , actor
--- , year 
--- , ARRAY_AGG(ROW(film, votes, rating, filmid)::films) AS films
--- FROM actor_films
--- WHERE 1=1
---       AND actor = 'Leonardo DiCaprio'
--- GROUP BY 1,2,3
-
-
-
+----------------------------
+----------------------------
+-------- Question 2 --------
+----------------------------
+----------------------------
 /*
-2. Cumulative table generation query:
-     Write a query that populates the actors table one year at a time.
+Cumulative table generation query:
+   - Write a query that populates the actors table one year at a time.
 */
 
--- INSERT INTO actors 
+-- INSERT INTO actors
 -- WITH min_max_years AS (
---   SELECT 
---     MIN(year) AS min_year
---   , MAX(year) AS max_year
---   FROM actor_films
+-- SELECT 
+--   MIN(year) AS min_year
+-- , MAX(year) AS max_year 
+-- FROM actor_films
 -- )
 
 -- , years AS (
@@ -77,7 +73,7 @@
 
 -- -- SELECT * FROM years
 
--- , first_year_active AS (
+-- , actor_first_year AS (
 --   SELECT 
 --     actorid
 --   , actor
@@ -91,7 +87,7 @@
 --     a.actorid
 --   , a.actor
 --   , b.year
---   FROM first_year_active a
+--   FROM actor_first_year a
 --   INNER JOIN years b
 --     ON a.first_year <= b.year
 -- )
@@ -107,19 +103,19 @@
 --   , actor_years.actor
 --   , actor_years.year
 --   , AVG(actor_films.rating) OVER(PARTITION BY actor_years.actorid, actor_years.year) AS avg_rating_in_year
---   , ARRAY_REMOVE(ARRAY_AGG(
---       CASE 
--- 	  	WHEN actor_films.year IS NOT NULL THEN 
--- 	  	  ROW(
--- 		    actor_films.film
--- 		  , actor_films.year
--- 	 	  , actor_films.votes
--- 		  , actor_films.rating
--- 		  , actor_films.filmid
--- 		  )::films
--- 		END
+--   , ARRAY_REMOVE(
+--     ARRAY_AGG (
+--       CASE WHEN actor_films.year IS NOT NULL THEN 
+-- 	    ROW(
+--           actor_films.filmid
+-- 		, actor_films.film
+-- 		, actor_films.year
+-- 		, actor_films.votes
+-- 		, actor_films.rating
+-- 		)::films
+-- 	  END
 -- 	) OVER(PARTITION BY actor_years.actorid ORDER BY COALESCE(actor_years.year, actor_films.year))
--- 	, NULL) AS films
+--   , NULL) AS films
 --   , ROW_NUMBER() OVER(PARTITION BY actor_years.actorid, COALESCE(actor_years.year, actor_films.year)) AS r
 --   FROM actor_years
 --   LEFT JOIN actor_films
@@ -127,11 +123,17 @@
 --   ORDER BY 1,2,3
 -- )
 
--- , rolling_with_adds AS (
+-- -- SELECT *
+-- -- FROM rolling_table
+-- -- WHERE 1=1
+-- -- 	  AND actor = 'Leonardo DiCaprio'
+-- -- ORDER BY 1,2,3
+
+-- , rolling_table_with_adds AS (
 --   SELECT 
 --     actorid
 --   , actor
---   , year
+--   , year 
 --   , ROUND(CAST(COALESCE(avg_rating_in_year, 0) AS NUMERIC), 1) AS avg_rating_in_year
 --   , CASE 
 --       WHEN avg_rating_in_year > 8 THEN 'star'
@@ -143,26 +145,29 @@
 --   , films
 --   FROM rolling_table
 --   WHERE 1=1
---   		AND r = 1
---   ORDER BY 1,2,3
+--   	    AND r = 1
 -- )
 
+-- -- SELECT *
+-- -- FROM rolling_table_with_adds
+-- -- WHERE 1=1
+-- -- 	  AND actor = 'Leonardo DiCaprio'
+-- -- ORDER BY 1,2,3
+
 -- SELECT 
---   actorid
+--   actorid 
 -- , actor
 -- , year
--- , avg_rating_in_year
 -- , quality_class
 -- , is_active
 -- , films
--- FROM rolling_with_adds 
--- WHERE 1=1
---       -- AND actor = 'Leonardo DiCaprio'
+-- FROM rolling_table_with_adds
 
 -- SELECT * FROM actors
 -- WHERE 1=1
 --       -- AND actor = 'Leonardo DiCaprio'
 -- 	  AND actor = 'Marlon Brando'
+-- ORDER BY 1,2,3
 
 
 
@@ -184,12 +189,15 @@
 
 ------- Note: 'current' year = 2021, so we'll hardcode that for this assignment
 
-
+----------------------------
+----------------------------
+-------- Question 4 --------
+----------------------------
+----------------------------
 /* 
-4. Backfill query for `actors_history_scd`: 
-   Write a "backfill" query that can populate the entire actors_history_scd table in a single query.
+Backfill query for `actors_history_scd`: 
+  - Write a "backfill" query that can populate the entire actors_history_scd table in a single query.
 */
-
 
 
 -- INSERT INTO actors_history_scd
@@ -266,10 +274,14 @@
 -- SELECT * FROM actors_history_scd WHERE actor = 'Leonardo DiCaprio' ORDER BY actor, start_date
 
 
-
+----------------------------
+----------------------------
+-------- Question 5 --------
+----------------------------
+----------------------------
 /* 
-5. Incremental query for `actors_history_scd`: 
-   Write an "incremental" query that combines the previous year's SCD data with new incoming data from the actors table. 
+Incremental query for `actors_history_scd`: 
+  - Write an "incremental" query that combines the previous year's SCD data with new incoming data from the actors table. 
 */
 
 
